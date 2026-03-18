@@ -3,82 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEND MAIL OTOMATIS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <title>Sistem Registrasi OTP Modern</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100vh; display: flex; align-items: center; justify-content: center; }
-        
-        .container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 450px; }
-        h2 { color: #333; margin-bottom: 20px; text-align: center; }
-        
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: #666; font-size: 14px; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; transition: 0.3s; }
-        input:focus, textarea:focus { border-color: #764ba2; box-shadow: 0 0 8px rgba(118, 75, 162, 0.2); }
-        
-        button { width: 100%; padding: 12px; background: #764ba2; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        button:hover { background: #5a397e; transform: translateY(-2px); }
-        
-        #status { margin-top: 15px; text-align: center; font-size: 14px; }
-        .success { color: #2ecc71; }
-        .error { color: #e74c3c; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .hidden { display: none; }
     </style>
 </head>
-<body>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
 
-<div class="container">
-    <h2>Hubungi Kami</h2>
-    <form id="contact-form">
-        <div class="form-group">
-            <label>Nama Lengkap</label>
-            <input type="text" name="user_name" id="userName" placeholder="Contoh: Budi Santoso" required>
+    <div id="auth-container" class="glass max-w-md w-full p-8 rounded-2xl shadow-2xl border border-white">
+        
+        <div id="step-register">
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Buat Akun</h2>
+            <p class="text-slate-500 mb-6 text-sm">Silakan daftar untuk masuk ke dashboard.</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Email Aktif</label>
+                    <input type="email" id="email" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="nama@gmail.com">
+                </div>
+                <button onclick="sendOTP()" id="btn-send" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition shadow-lg flex items-center justify-center">
+                    <span>Kirim Kode Verifikasi</span>
+                </button>
+            </div>
         </div>
-        <div class="form-group">
-            <label>Email Tujuan</label>
-            <input type="email" name="user_email" id="userEmail" placeholder="email@tujuan.com" required>
+
+        <div id="step-verify" class="hidden">
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Verifikasi Email</h2>
+            <p class="text-slate-500 mb-6 text-sm">Kode OTP telah dikirim ke email Anda.</p>
+            
+            <div class="space-y-4">
+                <input type="text" id="otp-input" maxlength="6" class="w-full text-center text-2xl tracking-[1em] font-bold px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 outline-none" placeholder="000000">
+                <button onclick="verifyOTP()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition shadow-lg">
+                    Verifikasi Sekarang
+                </button>
+                <button onclick="location.reload()" class="w-full text-sm text-slate-400 hover:text-slate-600 transition">Ganti Email</button>
+            </div>
         </div>
-        <div class="form-group">
-            <label>Pesan</label>
-            <textarea name="message" id="message" rows="4" placeholder="Tulis sesuatu..." required></textarea>
+
+        <div id="step-dashboard" class="hidden">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-check text-4xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Selamat Datang!</h2>
+                <p id="user-display" class="text-slate-500 mb-6 font-medium"></p>
+                
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-left mb-6">
+                    <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">Status Akun</p>
+                    <div class="flex items-center text-green-600 font-semibold">
+                        <i class="fa-solid fa-shield-check mr-2"></i> Terverifikasi OTP
+                    </div>
+                </div>
+                <button onclick="location.reload()" class="w-full bg-slate-800 text-white py-2 rounded-lg">Logout</button>
+            </div>
         </div>
-        <button type="submit" id="btn-send">Kirim Email Sekarang</button>
-        <p id="status"></p>
-    </form>
-</div>
+    </div>
 
-<script type="text/javascript">
-    (function() {
-        // GANTI dengan Public Key Anda dari EmailJS
-        emailjs.init("A5VCqiv7TWchHQ65q");
-    })();
+    <script>
+        // --- KONFIGURASI EMAILJS ---
+        (function() {
+            emailjs.init("A5VCqiv7TWchHQ65q"); // Ganti dengan Public Key Anda
+        })();
 
-    const btn = document.getElementById('btn-send');
-    const statusTxt = document.getElementById('status');
+        let generatedOTP;
+        const serviceID = "service_dexnzhe"; // Ganti dengan Service ID Anda
+        const templateID = "template_2vdb35a"; // Ganti dengan Template ID Anda
 
-    document.getElementById('contact-form').addEventListener('submit', function(event) {
-        event.preventDefault();
+        async function sendOTP() {
+            const email = document.getElementById('email').value;
+            const btn = document.getElementById('btn-send');
 
-        btn.innerText = 'Mengirim...';
-        btn.disabled = true;
+            if (!email.includes('@')) {
+                alert('Masukkan email yang valid!');
+                return;
+            }
 
-        // GANTI "YOUR_SERVICE_ID" dan "YOUR_TEMPLATE_ID" dengan milik Anda
-        emailjs.sendForm('service_dexnzhe', 'template_2vdb35a', this)
-            .then(function() {
-                statusTxt.innerHTML = '<span class="success">Email Berhasil Terkirim!</span>';
-                btn.innerText = 'Kirim Email Sekarang';
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Memproses...';
+
+            // Generate 6 digit OTP
+            generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+            const templateParams = {
+                to_email: email,
+                otp: generatedOTP
+            };
+
+            try {
+                await emailjs.send(serviceID, templateID, templateParams);
+                alert('OTP terkirim ke ' + email);
+                document.getElementById('step-register').classList.add('hidden');
+                document.getElementById('step-verify').classList.remove('hidden');
+            } catch (error) {
+                alert('Gagal mengirim email: ' + JSON.stringify(error));
                 btn.disabled = false;
-                document.getElementById('contact-form').reset();
-            }, function(error) {
-                statusTxt.innerHTML = '<span class="error">Gagal: ' + JSON.stringify(error) + '</span>';
-                btn.innerText = 'Coba Lagi';
-                btn.disabled = false;
-            });
-    });
-</script>
+                btn.innerText = 'Kirim Kode Verifikasi';
+            }
+        }
 
+        function verifyOTP() {
+            const input = document.getElementById('otp-input').value;
+            const email = document.getElementById('email').value;
+
+            if (input === generatedOTP) {
+                document.getElementById('step-verify').classList.add('hidden');
+                document.getElementById('step-dashboard').classList.remove('hidden');
+                document.getElementById('user-display').innerText = email;
+            } else {
+                alert('Kode OTP salah! Periksa kembali email Anda.');
+            }
+        }
+    </script>
 </body>
 </html>
